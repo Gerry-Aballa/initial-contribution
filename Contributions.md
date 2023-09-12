@@ -1,4 +1,3 @@
 # Contributors
 
-- Gerry Aballa
-- Another one
+- [Gerry Aballa](https://github.com/Gerry-Aballa) - Admin 🌟🌟🌟🌟🌟
