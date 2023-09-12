@@ -1,4 +1,3 @@
 # Contributors
 
-- Gerry Testing
-- Test test
+- [Gerry Aballa](https://github.com/Gerry-Aballa) - Admin 🌟🌟🌟🌟🌟
