@@ -1,0 +1,177 @@
+name: Auto Merge PRs
+on:
+  pull_request_target:
+    types: [opened, synchronize]
+    paths:
+      - "Contributions.md" # Insures only contributions file changes are merged
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+
+    steps:
+      # Check the repository code
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Check if PR only modifies Contibutions file
+        id: only_contributions_file
+        run: |
+          # Get a list of files changed in pull request
+          PR_FILES=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" | \
+          jq -r '.[].filename')
+          FILES_CHANGED=$(echo $PR_FILES | tr '\n' ' ')
+
+          echo "files_changed=$FILES_CHANGED" >> $GITHUB_ENV
+
+          if [[ "${FILES_CHANGED// /}" == "Contributions.md" ]]; then
+
+            echo "only_contributions=true" >> $GITHUB_ENV
+          else
+            echo "only_contributions=false" >> $GITHUB_ENV
+          fi
+
+      - name: Check if PR has only one line change
+        run: |
+          ADDITIONS=${{ github.event.pull_request.additions }}
+          DELETIONS=${{ github.event.pull_request.deletions }}
+
+          echo "additions=$ADDITIONS" >> $GITHUB_ENV
+          echo "deletions=$DELETIONS" >> $GITHUB_ENV
+
+          if [[ $ADDITIONS == 1 && $DELETIONS == 0 ]]; then
+            echo "one_line_change=true" >> $GITHUB_ENV
+          elif [[ $ADDITIONS == 2 && $DELETIONS == 1 ]]; then
+            echo "one_line_change=true" >> $GITHUB_ENV
+          else
+            echo "one_line_change=false" >> $GITHUB_ENV
+          fi
+
+      # Merge the pull request
+      - name: Merge Pull Request
+        id: merge-pr
+        if: env.only_contributions == 'true' && env.one_line_change == 'true'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+            // Attempt to merge the pull request using the squash method
+              const response = await github.rest.pulls.merge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+                 merge_method: "squash"
+              })
+
+            // Check if the merge was successful by checking the status code of the response
+             if (response.status === 200) {
+
+                const getMergeMessage = (username) => {
+                  const greeting = `Hello @${username}, congratulations! You've successfully submitted a pull request. 🎉`;
+                  const starRepoMessage = `If you liked the tutorial, please star this repo by clicking the star button on the top right of this page.`;
+              
+                  const feedbackMessage = `We'd love to hear your thoughts about this project. Let us know how we can improve by commenting or opening an issue here.`;
+              
+
+                  return `${greeting}\n\n${starRepoMessage}\n\n${feedbackMessage}`;
+                }
+
+                // Generate the merge message using the getMergeMessage function
+                const message = getMergeMessage(context.payload.pull_request.user.login);
+
+
+                // post a comment
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: message
+                })
+
+             } else {
+              // Post a comment on the pull request using the createComment method
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: "Something went wrong while attempting to merge this pull request. Please check the GitHub Actions log for more information."
+               })
+               }
+             }
+              catch (error) {
+                  let errMsg = "";
+                  console.error("Error merging pull request:", error.message);
+
+                  // Handle specific error cases based on status code
+                  if (error.status === 405 && error.response.data.message === "Pull Request is not mergeable") {
+
+                    errMsg = `Hello @${context.payload.pull_request.user.login}, thank you for your pull request. We appreciate your contribution to the project. However, before we can merge it, there is a merge conflict with the target branch. 
+                    Once you've fixed the conflicts and pushed your changes, the repository will check the changes you made and proceed with the merge if everything looks good.  \n\n If you have any questions or need further assistance, don't hesitate to reach out. We're here to help!`
+
+                  } else if (error.status === 409) {
+                    console.error("The pull request has conflicts with the target branch. Resolve the conflicts before merging.");
+                    errMsg = "The pull request has conflicts with the target branch. Resolve the conflicts before merging.";
+
+                  } else {
+                    console.error("Something went wrong while merging the pull request.");
+                    errMsg = "Something went wrong while merging the pull request.";
+                  }
+
+                  // Post a comment on the pull request using the createComment method
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.issue.number,
+                    body: errMsg
+                   })
+
+                  // Set GitHub Action as failed
+                  core.setFailed(error.message);
+
+             }
+
+      # Post a comment on the pull request if it was not merged automatically
+      - name: Post comment on PR if not merged automatically
+        # Check if the pull request only modifies the CONTRIBUTIONS.md file
+        if: env.only_contributions != 'true'
+        uses: actions/github-script@v5
+        with:
+          script: |
+            // get the existing comments.
+            const {data: comments} = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.number,
+            })
+
+            // find any comment already made by the bot.                                                                                                    
+            const botComment = comments.find(comment => comment.user.login === 'github-actions[bot]')                                                                       
+
+            const body = `Thank you for your pull request. This pull request contains changes in files which requires review. The following files were changed:\n\n  ${process.env.files_changed.trim() ? `\n\n${process.env.files_changed.trim().split(' ').map(file => `- ${file}`).join('\n')}` : ''}`
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              })
+            } else {
+                await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
+
+          github-token: ${{ secrets.GITHUB_TOKEN }}
