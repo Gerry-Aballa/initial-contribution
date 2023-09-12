@@ -8,14 +8,20 @@ Install [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) on 
 ## 1. Fork this repository
 Fork this repository by clicking on the fork button on the top of this page. This will create a copy of this repository in your account.
 
+<img width="300" src="https://github.com/Gerry-Aballa/initial-contribution/blob/main/assets/fork.png" alt="fork this repository" />
 
 ## 2. Clone the repository
 Now clone the forked repository to your machine. Go to your GitHub account, open the forked repository, click on the code button and then click the _copy to clipboard_ icon.
+
+<img width="300" src="https://github.com/Gerry-Aballa/initial-contribution/blob/main/assets/code_btn.png" alt="clone this repository" />
+
 Open a terminal and run the following git command:
 ```
 git clone "url you just copied"
 ```
 Where "url you just copied" (without the quotation marks) is the url to this repository (your fork of this project). See the previous steps to obtain the url.
+
+<img width="300" src="https://github.com/Gerry-Aballa/initial-contribution/blob/main/assets/copy_code.png" alt="copy this repository" />
 
 For example:
 ```
@@ -72,7 +78,7 @@ replacing `your-branch-name` with the name of the branch you created earlier.
 - ### Authentication Error
      <pre>remote: Support for password authentication was removed on August 13, 2021. Please use a personal access token instead.
   remote: Please see https://github.blog/2020-12-15-token-authentication-requirements-for-git-operations/ for more information.
-  fatal: Authentication failed for 'https://github.com/<your-username>/initial-contributions.git/'</pre>
+  fatal: Authentication failed for 'https://github.com/<your-username>/initial-contribution.git/'</pre>
   Go to [GitHub's tutorial](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account) on generating and configuring an SSH key to your account.
 
 </details>
@@ -81,11 +87,18 @@ replacing `your-branch-name` with the name of the branch you created earlier.
 ## 6. Submit your changes for review
 
 If you go to your repository on GitHub, you'll see a `Compare & pull request` button. Click on that button.
+
+<img src="https://github.com/Gerry-Aballa/initial-contribution/blob/main/assets/create_pr.png" alt="submit the changes" />
+
 Now submit the pull request.
 
+<img src="https://github.com/Gerry-Aballa/initial-contribution/blob/main/assets/create_pr1.png" alt="create pull request" />
 
 ## What next
 Soon I'll be merging all your changes into the main branch of this project. You will get a notification email once the changes have been merged.
+You are allowed to delete the created branch.
+
+<img src="https://github.com/Gerry-Aballa/initial-contribution/blob/main/assets/delete_branch.png" alt="delete the branch" />
 
 Congrats! You just completed the standard _fork -> clone -> edit -> pull request_ workflow that you'll often encounter as a contributor!
 
