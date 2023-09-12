@@ -25,7 +25,7 @@ jobs:
         id: only_contributions_file
         run: |
           # Get a list of files changed in pull request
-          PR_FILES=$(curl -s -H "Authorization: Bearer ${{ secrets.MY_TOKEN }}" \
+          PR_FILES=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
           "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" | \
           jq -r '.[].filename')
           FILES_CHANGED=$(echo $PR_FILES | tr '\n' ' ')
@@ -61,7 +61,7 @@ jobs:
         if: env.only_contributions == 'true' && env.one_line_change == 'true'
         uses: actions/github-script@v5
         with:
-          github-token: ${{ secrets.MY_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             try {
             // Attempt to merge the pull request using the squash method
@@ -173,4 +173,4 @@ jobs:
               });
             }
 
-          github-token: ${{ secrets.MY_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
