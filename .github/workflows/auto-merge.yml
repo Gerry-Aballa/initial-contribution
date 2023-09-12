@@ -63,7 +63,6 @@ jobs:
         with:
           github-token: ${{ secrets.MY_TOKEN }}
           script: |
-            async function mergePR() {
             try {
             // Attempt to merge the pull request using the squash method
               const response = await github.rest.pulls.merge({
@@ -83,7 +82,7 @@ jobs:
                   const feedbackMessage = `We'd love to hear your thoughts about this project. Let us know how we can improve by commenting or opening an issue here.`;
               
 
-                  return `${greeting}\n\n${starRepoMessage}\n\n${feedbackMessage}\n\n${gif}`;
+                  return `${greeting}\n\n${starRepoMessage}\n\n${feedbackMessage}`;
                 }
 
                 // Generate the merge message using the getMergeMessage function
@@ -137,8 +136,8 @@ jobs:
                   // Set GitHub Action as failed
                   core.setFailed(error.message);
 
-              }
-            }
+             }
+
       # Post a comment on the pull request if it was not merged automatically
       - name: Post comment on PR if not merged automatically
         # Check if the pull request only modifies the CONTRIBUTIONS.md file
