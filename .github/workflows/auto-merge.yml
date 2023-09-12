@@ -77,7 +77,7 @@ jobs:
 
                 const getMergeMessage = (username) => {
                   const greeting = `Hello @${username}, congratulations! You've successfully submitted a pull request. 🎉`;
-                  const starRepoMessage = `If you liked the tutorial, please star this repo by clicking the star button on the top right of this page.;
+                  const starRepoMessage = `If you liked the tutorial, please star this repo by clicking the star button on the top right of this page.`;
               
                   const feedbackMessage = `We'd love to hear your thoughts about this project. Let us know how we can improve by commenting or opening an issue here.`;
               
