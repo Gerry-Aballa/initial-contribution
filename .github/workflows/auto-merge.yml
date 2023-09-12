@@ -59,7 +59,7 @@ jobs:
       - name: Merge Pull Request
         id: merge-pr
         if: env.only_contributions == 'true' && env.one_line_change == 'true'
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
